@@ -1,121 +1,164 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XCEngine.Server
+﻿namespace XCEngine.Server
 {
-    /// <summary>
-    /// 工作线程封装
-    /// </summary>
-    internal class WorkThread
+    class WorkThreadContext
     {
         /// <summary>
-        /// 内部定义的工作线程Id
+        /// 线程权重，用来决定一次性执行Actor多少个消息
         /// </summary>
-        public int Id { get; private set; }
+        public int Weight = 0;
 
+        /// <summary>
+        /// 执行线程
+        /// </summary>
+        public Thread Thread = null;
+    }
+
+    /// <summary>
+    /// 工作线程
+    /// </summary>
+    internal static class WorkThread
+    {
         /// <summary>
         /// 是否停止
         /// </summary>
-        private bool _stop = false;
+        private static bool _stop = false;
 
         /// <summary>
-        /// 内部线程
+        /// 线程同步变量
         /// </summary>
-        Thread _thread = null;
+        private static object _lock = new();
 
         /// <summary>
-        /// 构造函数
+        /// 工作线程数组
         /// </summary>
-        /// <param name="id">内部定义的工作线程Id</param>
-        public WorkThread(int id)
-        {
-            Id = id;
-        }
+        private static List<WorkThreadContext> _workThreadContextList = new();
+
+        /// <summary>
+        /// 睡眠的线程数
+        /// </summary>
+        private static int _sleepCount = 0;
 
         /// <summary>
         /// 启动工作线程
         /// </summary>
-        public void Start()
+        /// <param name="count">工作线程数量</param>
+        public static void Start(int count)
         {
-            if (_thread != null)
+            for (int i = 0; i < count; i++)
             {
-                Log.Error($"WorkThread[{Id}] Already Started.");
-                return;
-            }
-
-            _stop = false;
-            _thread = new Thread(() => Run());
-            _thread.Name = $"WorkThread[{Id}:D2]";
-            _thread.Start();
-        }
-
-        void Run()
-        {
-            WorkThreadContext.WorkId.Value = Id;
-
-            while (_stop == false)
-            {
-                lock (this)
-                {
-                    //if (_messageList.Count == 0)
-                    //{
-                    //    // 1秒返回检查下停止标记
-                    //    Monitor.Wait(this, 1000, true);
-                    //}
-
-                    //if (_messageList.Count == 0)
-                    //{
-                    //    continue;
-                    //}
-
-                    //CommonUtils.Swap(ref _messageList, ref _tempMessageList);
-                    // TODO
-                }
-
-                //for (int i = 0; i < _tempMessageList.Count; ++i)
-                //{
-                //    ExecuteMessage(_tempMessageList[i]);
-                //}
-
-                //_tempMessageList.Clear();
+                var worker = new WorkThreadContext();
+                worker.Thread = new Thread(() => ThreadRunner(worker));
+                worker.Thread.Name = $"WorkThread[{i}:D2]";
+                worker.Thread.Start();
+                _workThreadContextList.Add(worker);
             }
         }
-
-        ///// <summary>
-        ///// 执行EntityMessage
-        ///// </summary>
-        ///// <param name="message"></param>
-        //void ExecuteMessage(EntityMessage message)
-        //{
-        //    System.Threading.SynchronizationContext.SetSynchronizationContext(new SynchronizationContext(_id, message.EntityId));
-        //    WorkThreadContext.CurrentEntityId = message.EntityId;
-
-        //    EntityManager.Instance.ExecuteMessage(message);
-        //}
-
-        ///// <summary>
-        ///// 像这个线程发送Entity消息
-        ///// </summary>
-        ///// <param name="message"></param>
-        //public void SendMessage(EntityMessage message)
-        //{
-        //    lock (this)
-        //    {
-        //        _messageList.Add(message);
-        //        Monitor.Pulse(this);
-        //    }
-        //}
 
         /// <summary>
-        /// 停止线程
+        /// 运行线程
         /// </summary>
-        public void Stop()
+        private static void ThreadRunner(WorkThreadContext workThreadContext)
         {
-            _stop = true;
-            _thread?.Join();
+            // 这一块结构仿照的是skynet
+            ActorMessageQueue queue = null;
+            while (_stop == false)
+            {
+                queue = DispatchActorMessage(workThreadContext, queue);
+                if (queue == null)
+                {
+                    lock (_lock)
+                    {
+                        ++_sleepCount;
+                        if (_stop == false)
+                        {
+                            Monitor.Wait(_lock);
+                        }
+                        --_sleepCount;
+                    }
+                }
+            }
+        }
+
+        private static ActorMessageQueue DispatchActorMessage(WorkThreadContext workThreadContext, ActorMessageQueue queue)
+        {
+            if (queue == null)
+            {
+                queue = GlobalActorMessageQueue.Pop();
+                if (queue == null)
+                {
+                    return null;
+                }
+            }
+
+            var actorContext = Actor.GetActorContext(queue.ActorId);
+            if (actorContext == null)
+            {
+                // TODO：暂时直接删除，skynet会向发送方回复消息
+                return GlobalActorMessageQueue.Pop();
+            }
+
+            int n = 1;
+            ActorMessage message;
+            for (int i = 0; i < n; ++i)
+            {
+                message = queue.PopMessage();
+                if (message == null)
+                {
+                    return GlobalActorMessageQueue.Pop();
+                }
+                else if (i == 0 && workThreadContext.Weight >= 0)
+                {
+                    // 这一块抄的skynet
+                    n = queue.Count;
+                    n >>= workThreadContext.Weight;
+                }
+
+                // 执行Actor消息
+                actorContext.MessageHandler?.Invoke(actorContext.ActorObject, message);
+            }
+
+            var nextQueue = GlobalActorMessageQueue.Pop();
+            if (nextQueue != null)
+            {
+                // 让出线程给下一个actor，自己重新push回全局队列
+                GlobalActorMessageQueue.Push(queue);
+                queue = nextQueue;
+            }
+
+            return queue;
+        }
+
+        /// <summary>
+        /// 唤醒一个线程
+        /// </summary>
+        public static void WakeUp()
+        {
+            if (_sleepCount >= 1)
+            {
+                lock (_lock)
+                {
+                    Monitor.Pulse(_lock);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 停止所有工作线程
+        /// </summary>
+        public static void Stop()
+        {
+            lock (_lock)
+            {
+                _stop = true;
+                Monitor.PulseAll(_lock);
+            }
+
+            foreach (var woker in _workThreadContextList)
+            {
+                woker.Thread?.Join();
+            }
+
+            _workThreadContextList.Clear();
         }
     }
 }

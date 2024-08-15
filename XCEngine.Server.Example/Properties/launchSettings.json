@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "XCEngine.Server.Example": {
+      "commandName": "Project",
+      "commandLineArgs": "Config.json",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}
