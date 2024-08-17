@@ -60,7 +60,7 @@
         /// <summary>
         /// 消息数据
         /// </summary>
-        public byte[] MessageData;
+        public object MessageData;
 
         ///// <summary>
         ///// 消息回复的tcs，用来处理call类型消息

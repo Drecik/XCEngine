@@ -43,7 +43,7 @@ namespace XCEngine.Server
                 Log.Error("Invalid bootstrap type");
                 Environment.Exit(1);
             }
-            _bootstrapActorId = Actor.Start(bootstrapType, null);
+            _bootstrapActorId = Actor.Start(bootstrapType);
 
             LoopUntilStop();
         }

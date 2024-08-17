@@ -24,6 +24,11 @@ namespace XCEngine.Server
         /// </summary>
         private static Dictionary<Type, Action<object, ActorMessage>> _actorMessageHandlerDict = new();
 
+        /// <summary>
+        /// Message序列化对象
+        /// </summary>
+        public static ISerializer MessageSerializer = new MemoryPackSerializer();
+
         #region 初始化
 
         /// <summary>
@@ -99,18 +104,50 @@ namespace XCEngine.Server
 
         #region Actor操作
 
+        #region Start
+
         /// <summary>
         /// 启动Actor
         /// </summary>
         /// <typeparam name="T">actor类型</typeparam>
         /// <param name="param">创建参数</param>
         /// <returns></returns>
-        public static int Start<T>(byte[] data) where T : class, new()
+        public static int StartWithRaw<ActorType>(object data) where ActorType : class, new()
         {
-            return Start(typeof(T), data);
+            return StartWithRaw(typeof(ActorType), data);
         }
 
-        public static int Start(Type type, byte[] data = null)
+        public static int Start<ActorType>() where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(null);
+        }
+
+        public static int Start<ActorType, T>(T param) where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(MessageSerializer.Serialize(param));
+        }
+
+        public static int Start<ActorType, T1, T2>(T1 param1, T2 param2) where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(MessageSerializer.Serialize(param1, param2));
+        }
+
+        public static int Start<ActorType, T1, T2, T3>(T1 param1, T2 param2, T3 param3) where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(MessageSerializer.Serialize(param1, param2, param3));
+        }
+
+        public static int Start<ActorType, T1, T2, T3, T4>(T1 param1, T2 param2, T3 param3, T4 param4) where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(MessageSerializer.Serialize(param1, param2, param3, param4));
+        }
+
+        public static int Start<ActorType, T1, T2, T3, T4, T5>(T1 param1, T2 param2, T3 param3, T4 param4, T5 param5) where ActorType : class, new()
+        {
+            return StartWithRaw<ActorType>(MessageSerializer.Serialize(param1, param2, param3, param4, param5));
+        }
+
+        public static int StartWithRaw(Type type, object data)
         {
             if (_actorMessageHandlerDict.TryGetValue(type, out var handler) == false)
             {
@@ -146,6 +183,38 @@ namespace XCEngine.Server
 
             return actorId;
         }
+
+        public static int Start(Type type)
+        {
+            return StartWithRaw(type, null);
+        }
+
+        public static int Start<T>(Type type, T param)
+        {
+            return StartWithRaw(type, MessageSerializer.Serialize(param));
+        }
+
+        public static int Start<T1, T2>(Type type, T1 param1, T2 param2)
+        {
+            return StartWithRaw(type, MessageSerializer.Serialize(param1, param2));
+        }
+
+        public static int Start<T1, T2, T3>(Type type, T1 param1, T2 param2, T3 param3)
+        {
+            return StartWithRaw(type, MessageSerializer.Serialize(param1, param2, param3));
+        }
+
+        public static int Start<T1, T2, T3, T4>(Type type, T1 param1, T2 param2, T3 param3, T4 param4)
+        {
+            return StartWithRaw(type, MessageSerializer.Serialize(param1, param2, param3, param4));
+        }
+
+        public static int Start<T1, T2, T3, T4, T5>(Type type, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+        {
+            return StartWithRaw(type, MessageSerializer.Serialize(param1, param2, param3, param4, param5));
+        }
+
+        #endregion
 
         /// <summary>
         /// 杀死其他Actor
@@ -197,12 +266,14 @@ namespace XCEngine.Server
             actorContext.ActorMessageQueue.PushMessage(msg);
         }
 
+        #region Send
+
         /// <summary>
         /// 向Actor以Send形式发送消息
         /// </summary>
         /// <param name="actorId"></param>
         /// <param name="param"></param>
-        public static void Send(int actorId, string messageId, byte[] data = null)
+        public static void SendWithRaw(int actorId, string messageId, object data)
         {
             var actorContext = GetActorContext(actorId);
             if (actorContext == null)
@@ -222,6 +293,38 @@ namespace XCEngine.Server
 
             actorContext.ActorMessageQueue.PushMessage(msg);
         }
+
+        public static void Send(int actorId, string messageId)
+        {
+            SendWithRaw(actorId, messageId, null);
+        }
+
+        public static void Send<T>(int actorId, string messageId, T param)
+        {
+            SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param));
+        }
+
+        public static void Send<T1, T2>(int actorId, string messageId, T1 param1, T2 param2)
+        {
+            SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param1, param2));
+        }
+
+        public static void Send<T1, T2, T3>(int actorId, string messageId, T1 param1, T2 param2, T3 param3)
+        {
+            SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param1, param2, param3));
+        }
+
+        public static void Send<T1, T2, T3, T4>(int actorId, string messageId, T1 param1, T2 param2, T3 param3, T4 param4)
+        {
+            SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param1, param2, param3, param4));
+        }
+
+        public static void Send<T1, T2, T3, T4, T5>(int actorId, string messageId, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+        {
+            SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param1, param2, param3, param4, param5));
+        }
+
+        #endregion
 
         ///// <summary>
         ///// 向Actor以Call形式发送消息

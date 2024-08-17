@@ -1,6 +1,4 @@
-﻿using XCEngine.Core;
-
-internal class Bootstrap
+﻿internal class Bootstrap
 {
 
 }
@@ -12,9 +10,13 @@ internal class BootstrapMessageHandler : IActorMessageHandler
     {
         if (actorMessage.MessageType == ActorMessage.EMessageType.Create)
         {
-            Log.Info("Started");
+            Log.Info($"Started");
 
-            Actor.Exit();
+            int actor1 = Actor.Start<TestActor1, int, string, double>(1, "1", 2.0);
+            int actor2 = Actor.Start<TestActor2>();
+
+            Actor.Send(actor2, "TestSend", 1, "1", 2.0);
+            Actor.Kill(actor2);
         }
         
         if (actorMessage.MessageType == ActorMessage.EMessageType.Destroy)

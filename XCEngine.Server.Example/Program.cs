@@ -1,3 +1,4 @@
-﻿global using XCEngine.Server;
+﻿global using XCEngine.Core;
+global using XCEngine.Server;
 
 XC.Start(args);

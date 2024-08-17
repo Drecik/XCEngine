@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="MemoryPack" Version="1.21.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>
