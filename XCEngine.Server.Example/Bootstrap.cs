@@ -10,6 +10,16 @@ internal class BootstrapMessageHandler : IActorMessageHandler
 {
     public void OnMessage(object actor, ActorMessage actorMessage)
     {
-        Log.Info("Started");
+        if (actorMessage.MessageType == ActorMessage.EMessageType.Create)
+        {
+            Log.Info("Started");
+
+            Actor.Exit();
+        }
+        
+        if (actorMessage.MessageType == ActorMessage.EMessageType.Destroy)
+        {
+            Log.Info("Destroy");
+        }
     }
 }

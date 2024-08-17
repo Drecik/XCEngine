@@ -223,35 +223,35 @@ namespace XCEngine.Server
             actorContext.ActorMessageQueue.PushMessage(msg);
         }
 
-        /// <summary>
-        /// 向Actor以Call形式发送消息
-        /// </summary>
-        /// <param name="actorId"></param>
-        /// <param name="param"></param>
-        /// <returns></returns>
-        public static Task<object> Call(int actorId, string messageId, byte[] data = null)
-        {
-            var actorContext = GetActorContext(actorId);
-            if (actorContext == null)
-            {
-                Log.Info($"Actor: {actorId} not exist.");
-                return Task.FromResult<object>(null);
-            }
+        ///// <summary>
+        ///// 向Actor以Call形式发送消息
+        ///// </summary>
+        ///// <param name="actorId"></param>
+        ///// <param name="param"></param>
+        ///// <returns></returns>
+        //public static Task Call(int actorId, string messageId, byte[] data = null)
+        //{
+        //    var actorContext = GetActorContext(actorId);
+        //    if (actorContext == null)
+        //    {
+        //        Log.Info($"Actor: {actorId} not exist.");
+        //        return Task.CompletedTask;
+        //    }
 
-            var tcs = new TaskCompletionSource<object>();
-            var msg = new ActorMessage()
-            {
-                MessageType = ActorMessage.EMessageType.Send,
-                From = ActorId.Value,
-                To = actorId,
-                MessageId = messageId,
-                MessageData = data,
-                MessageReplyTcs = tcs
-            };
+        //    var tcs = new TaskCompletionSource();
+        //    var msg = new ActorMessage()
+        //    {
+        //        MessageType = ActorMessage.EMessageType.Send,
+        //        From = ActorId.Value,
+        //        To = actorId,
+        //        MessageId = messageId,
+        //        MessageData = data,
+        //        MessageReplyTcs = tcs
+        //    };
 
-            actorContext.ActorMessageQueue.PushMessage(msg);
-            return tcs.Task;
-        }
+        //    actorContext.ActorMessageQueue.PushMessage(msg);
+        //    return tcs.Task;
+        //}
 
         #endregion
     }

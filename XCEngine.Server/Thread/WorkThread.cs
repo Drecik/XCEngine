@@ -39,6 +39,16 @@
         private static int _sleepCount = 0;
 
         /// <summary>
+        /// 线程权重
+        /// </summary>
+        private static int[] WEIGHTS = {
+            -1, -1, -1, -1, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+            2, 2, 2, 2, 2, 2, 2, 2,
+            3, 3, 3, 3, 3, 3, 3, 3
+        };
+
+        /// <summary>
         /// 启动工作线程
         /// </summary>
         /// <param name="count">工作线程数量</param>
@@ -47,6 +57,7 @@
             for (int i = 0; i < count; i++)
             {
                 var worker = new WorkThreadContext();
+                worker.Weight = i < WEIGHTS.Length ? WEIGHTS[i] : 0;
                 worker.Thread = new Thread(() => ThreadRunner(worker));
                 worker.Thread.Name = $"WorkThread[{i}:D2]";
                 worker.Thread.Start();
@@ -96,6 +107,8 @@
                 // TODO：暂时直接删除，skynet会向发送方回复消息
                 return GlobalActorMessageQueue.Pop();
             }
+
+            Actor.ActorId.Value = queue.ActorId;
 
             int n = 1;
             ActorMessage message;

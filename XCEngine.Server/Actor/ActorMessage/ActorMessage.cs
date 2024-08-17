@@ -62,9 +62,9 @@
         /// </summary>
         public byte[] MessageData;
 
-        /// <summary>
-        /// 消息回复的tcs，用来处理call类型消息
-        /// </summary>
-        public TaskCompletionSource<object> MessageReplyTcs;
+        ///// <summary>
+        ///// 消息回复的tcs，用来处理call类型消息
+        ///// </summary>
+        //public TaskCompletionSource MessageReplyTcs;
     }
 }

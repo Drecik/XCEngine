@@ -111,7 +111,7 @@ namespace XCEngine.Core
         /// 输出Debug日志
         /// </summary>
         /// <param name="text"></param>
-        public static void Debug(string text, int skipFrames = 0)
+        public static void Debug(string text, int skipFrames = 1)
         {
             if (IsLogEnabled(ELogLevel.Debug) == false)
             {
@@ -124,7 +124,7 @@ namespace XCEngine.Core
         /// 输出信息日志
         /// </summary>
         /// <param name="text"></param>
-        public static void Info(string text, int skipFrames = 0)
+        public static void Info(string text, int skipFrames = 1)
         {
             if (IsLogEnabled(ELogLevel.Info) == false)
             {
@@ -137,7 +137,7 @@ namespace XCEngine.Core
         /// 输出警告日志
         /// </summary>
         /// <param name="text"></param>
-        public static void Warning(string text, int skipFrames = 0)
+        public static void Warning(string text, int skipFrames = 1)
         {
             if (IsLogEnabled(ELogLevel.Warning) == false)
             {
@@ -150,7 +150,7 @@ namespace XCEngine.Core
         /// 输出异常日志
         /// </summary>
         /// <param name="ex"></param>
-        public static void Exception(Exception ex, int skipFrames = 0)
+        public static void Exception(Exception ex, int skipFrames = 1)
         {
             Exception(string.Empty, ex, skipFrames);
         }
@@ -160,7 +160,7 @@ namespace XCEngine.Core
         /// </summary>
         /// <param name="text"></param>
         /// <param name="ex"></param>
-        public static void Exception(string text, Exception ex, int skipFrames = 0)
+        public static void Exception(string text, Exception ex, int skipFrames = 1)
         {
             if (IsLogEnabled(ELogLevel.Exception) == false)
             {
@@ -175,7 +175,7 @@ namespace XCEngine.Core
         /// 输出错误日志
         /// </summary>
         /// <param name="text"></param>
-        public static void Error(string text, int skipFrames = 0)
+        public static void Error(string text, int skipFrames = 1)
         {
             if (IsLogEnabled(ELogLevel.Error) == false)
             {
