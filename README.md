@@ -35,9 +35,9 @@ Actor主要代码在Actor中，目前实现了基础的Actor功能。需要注�
   向指定Actor发送消息
 
 ## Features
-1. ~~ 简化序列化操作 ~~
+1. ~~简化序列化操作~~
   
-  Actor.Start和Actor.Send支持最多5个的自定义传参操作，框架使用的是MemoryPack来实现序列化和反序列化，如果需要替换可以实现ISerializer接口，然后替换Actor.MessageSerializer
+    Actor.Start和Actor.Send支持最多5个的自定义传参操作，框架使用的是MemoryPack来实现序列化和反序列化，如果需要替换可以实现ISerializer接口，然后替换Actor.MessageSerializer
 
 2. 实现定时器功能
 3. 利用async await实现Actor.Call
