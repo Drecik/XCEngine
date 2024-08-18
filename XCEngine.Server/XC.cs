@@ -102,5 +102,82 @@ namespace XCEngine.Server
 
             Log.Info("========= Stop =========");
         }
+
+        #region Timer
+
+        private static Core.Timer _timer = new Core.Timer();
+
+        internal static void UpdateTimer()
+        {
+            lock (_timer)
+            {
+                _timer.Update();
+            }
+        }
+
+        /// <summary>
+        /// 延迟执行
+        /// </summary>
+        /// <param name="delay">延迟毫秒数</param>
+        /// <param name="messageId">执行的消息id</param>
+        /// <param name="userData">用户数据</param>
+        public static void Delay(long delay, string messageId, object userData = null)
+        {
+            lock (_timer)
+            {
+                var actorId = Actor.ActorId.Value;
+                _timer.AddTask(TimeUtils.NowMs() + delay, 0, () =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
+                    {
+                        From = 0,
+                        To = actorId,
+                        MessageType = ActorMessage.EMessageType.Timer,
+                        MessageId = messageId,
+                        MessageData = userData
+                    });
+                });
+            }
+        }
+
+        /// <summary>
+        /// 重复执行
+        /// </summary>
+        /// <param name="firstDelay">第一次执行延时的毫秒数</param>
+        /// <param name="interval">每次执行间隔</param>
+        /// <param name="messageId">执行的</param>
+        /// <param name="userData">用户数据</param>
+        public static void Tick(long firstDelay, int interval, string messageId, object userData = null)
+        {
+            lock (_timer)
+            {
+                var actorId = Actor.ActorId.Value;
+                _timer.AddTask(TimeUtils.NowMs() + firstDelay, interval, () =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
+                    {
+                        From = 0,
+                        To = actorId,
+                        MessageType = ActorMessage.EMessageType.Timer,
+                        MessageId = messageId,
+                        MessageData = userData
+                    });
+                });
+            }
+        }
+
+        /// <summary>
+        /// 取消定时器
+        /// </summary>
+        /// <param name="timerId"></param>
+        public static void Cancel(int timerId)
+        {
+            lock (_timer)
+            {
+                _timer.CancelTask(timerId);
+            }
+        }
+
+        #endregion
     }
 }

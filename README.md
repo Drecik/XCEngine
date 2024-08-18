@@ -38,6 +38,15 @@ Actor主要代码在Actor中，目前实现了基础的Actor功能。需要注�
 
   向指定Actor发送消息
 
+#### 3. Timer
+-  XC.Delay
+
+  延迟一定毫秒数之后执行message id的消息
+
+- XC.Tick
+
+  延迟一定毫秒数之后开始每隔指定毫秒时间执行message id的消息
+
 ### XCEngine.Server.Example
 
 XCEngine.Server的一些简单使用例子
@@ -47,6 +56,10 @@ XCEngine.Server的一些简单使用例子
   
     Actor.Start和Actor.Send支持最多5个的自定义传参操作，框架使用的是MemoryPack来实现序列化和反序列化，如果需要替换可以实现ISerializer接口，然后替换Actor.MessageSerializer
 
-2. 实现定时器功能
+2. ~~实现定时器功能~~
+
+    参考文档中的Timer
+
 3. 利用async await实现Actor.Call
 4. 实现socket封装
+5. 利用属性自动执行消息id回调

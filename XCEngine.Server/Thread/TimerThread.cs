@@ -33,6 +33,7 @@
         {
             while (_stop == false)
             {
+                XC.UpdateTimer();
                 Thread.Sleep(2);
                 WorkThread.WakeUp();
             }

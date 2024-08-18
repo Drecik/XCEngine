@@ -222,12 +222,12 @@ namespace XCEngine.Server
         /// <param name="actorId"></param>
         public static void Kill(int actorId)
         {
-            Log.Info($"Kill actor {actorId}");
+            Log.Info($"Kill actor[{actorId}]");
 
             var actorContext = GetActorContext(actorId);
             if (actorContext == null)
             {
-                Log.Info($"Actor: {actorId} not exist.");
+                Log.Info($"Actor[{actorId}] not exist.");
                 return;
             }
 
@@ -247,12 +247,12 @@ namespace XCEngine.Server
         public static void Exit()
         {
             int actorId = ActorId.Value;
-            Log.Info($"Exit actor {actorId}");
+            Log.Info($"Exit actor[{actorId}]");
 
             var actorContext = GetActorContext(actorId);
             if (actorContext == null)
             {
-                Log.Info($"Actor: {actorId} not exist.");
+                Log.Info($"Actor[{actorId}] not exist.");
                 return;
             }
 
@@ -278,7 +278,7 @@ namespace XCEngine.Server
             var actorContext = GetActorContext(actorId);
             if (actorContext == null)
             {
-                Log.Info($"Actor: {actorId} not exist.");
+                Log.Info($"Actor[{actorId}] not exist.");
                 return;
             }
 
@@ -355,6 +355,22 @@ namespace XCEngine.Server
         //    actorContext.ActorMessageQueue.PushMessage(msg);
         //    return tcs.Task;
         //}
+
+        /// <summary>
+        /// 向指定Actor发送原始Message
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="message"></param>
+        internal static void PushMessage(int actorId, ActorMessage message)
+        {
+            var actorContext = GetActorContext(actorId);
+            if (actorContext == null)
+            {
+                return;
+            }
+
+            actorContext.ActorMessageQueue.PushMessage(message);
+        }
 
         #endregion
     }
