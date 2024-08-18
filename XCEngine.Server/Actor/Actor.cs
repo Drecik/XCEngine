@@ -107,21 +107,33 @@ namespace XCEngine.Server
         #region Start
 
         /// <summary>
-        /// 启动Actor
+        /// 模板方式启动Actor
         /// </summary>
-        /// <typeparam name="T">actor类型</typeparam>
-        /// <param name="param">创建参数</param>
-        /// <returns></returns>
+        /// <typeparam name="ActorType">actor类型</typeparam>
+        /// <param name="data">创建参数（Actor之间内存隔离，这里应该是序列化过的数据）</param>
+        /// <returns>actor id</returns>
         public static int StartWithRaw<ActorType>(object data) where ActorType : class, new()
         {
             return StartWithRaw(typeof(ActorType), data);
         }
 
+        /// <summary>
+        /// 模板方式直接启动Actor
+        /// </summary>
+        /// <typeparam name="ActorType">actor类型</typeparam>
+        /// <returns>actor id</returns>
         public static int Start<ActorType>() where ActorType : class, new()
         {
             return StartWithRaw<ActorType>(null);
         }
 
+        /// <summary>
+        /// 以模板方式的带有参数的方式启动Actor，参数不用序列化，会自动使用MessageSerializer进行序列化
+        /// </summary>
+        /// <typeparam name="ActorType">actor类型</typeparam>
+        /// <typeparam name="T">参数类型</typeparam>
+        /// <param name="param">参数</param>
+        /// <returns>actor id</returns>
         public static int Start<ActorType, T>(T param) where ActorType : class, new()
         {
             return StartWithRaw<ActorType>(MessageSerializer.Serialize(param));
@@ -147,6 +159,12 @@ namespace XCEngine.Server
             return StartWithRaw<ActorType>(MessageSerializer.Serialize(param1, param2, param3, param4, param5));
         }
 
+        /// <summary>
+        /// 用Type传参形式启动Actor
+        /// </summary>
+        /// <param name="type">actor type</param>
+        /// <param name="data">创建参数（Actor之间内存隔离，这里应该是序列化过的数据）</param>
+        /// <returns></returns>
         public static int StartWithRaw(Type type, object data)
         {
             if (_actorMessageHandlerDict.TryGetValue(type, out var handler) == false)
@@ -184,11 +202,23 @@ namespace XCEngine.Server
             return actorId;
         }
 
+        /// <summary>
+        /// 用Type传参形式直接启动Actor
+        /// </summary>
+        /// <param name="type">actor type</typeparam>
+        /// <returns>actor id</returns>
         public static int Start(Type type)
         {
             return StartWithRaw(type, null);
         }
 
+        /// <summary>
+        /// 用Type传参方式的带有参数的方式启动Actor，参数不用序列化，会自动使用MessageSerializer进行序列化
+        /// </summary>
+        /// <typeparam name="T">参数类型</typeparam>
+        /// <param name="type">actor type</typeparam>
+        /// <param name="param">参数</param>
+        /// <returns>actor id</returns>
         public static int Start<T>(Type type, T param)
         {
             return StartWithRaw(type, MessageSerializer.Serialize(param));
@@ -271,8 +301,9 @@ namespace XCEngine.Server
         /// <summary>
         /// 向Actor以Send形式发送消息
         /// </summary>
-        /// <param name="actorId"></param>
-        /// <param name="param"></param>
+        /// <param name="actorId">接收消息的actor id</param>
+        /// <param name="messageId">消息id</param>
+        /// <param name="data">消息数据（Actor之间内存隔离，这里应该是序列化过的数据）</param>
         public static void SendWithRaw(int actorId, string messageId, object data)
         {
             var actorContext = GetActorContext(actorId);
@@ -294,11 +325,23 @@ namespace XCEngine.Server
             actorContext.ActorMessageQueue.PushMessage(msg);
         }
 
+        /// <summary>
+        /// 向Actor以Send形式发送无参数消息
+        /// </summary>
+        /// <param name="actorId">接收消息的actor id</param>
+        /// <param name="messageId">消息id</param>
         public static void Send(int actorId, string messageId)
         {
             SendWithRaw(actorId, messageId, null);
         }
 
+        /// <summary>
+        /// 向Actor以Send形式发送带参数的消息，参数不用序列化，会自动使用MessageSerializer进行序列化
+        /// </summary>
+        /// <typeparam name="T">参数类型</typeparam>
+        /// <param name="actorId">接收消息的actor id</param>
+        /// <param name="messageId">消息id</param>
+        /// <param name="param">参数</param>
         public static void Send<T>(int actorId, string messageId, T param)
         {
             SendWithRaw(actorId, messageId, MessageSerializer.Serialize(param));
@@ -326,25 +369,29 @@ namespace XCEngine.Server
 
         #endregion
 
+        //#region Call
+
         ///// <summary>
         ///// 向Actor以Call形式发送消息
+        ///// 返回的数据应该也是需要经过序列化的数据
         ///// </summary>
-        ///// <param name="actorId"></param>
-        ///// <param name="param"></param>
-        ///// <returns></returns>
-        //public static Task Call(int actorId, string messageId, byte[] data = null)
+        ///// <param name="actorId">接收消息的actor</param>
+        ///// <param name="messageId">消息id</param>
+        ///// <param name="data">消息参数（Actor之间内存隔离，这里应该是序列化过的数据）</param>
+        ///// <returns>返回Task</returns>
+        //public static async Task<object> CallWithRaw(int actorId, string messageId, object data)
         //{
         //    var actorContext = GetActorContext(actorId);
         //    if (actorContext == null)
         //    {
         //        Log.Info($"Actor: {actorId} not exist.");
-        //        return Task.CompletedTask;
+        //        return null;
         //    }
 
-        //    var tcs = new TaskCompletionSource();
+        //    var tcs = new TaskCompletionSource<object>();
         //    var msg = new ActorMessage()
         //    {
-        //        MessageType = ActorMessage.EMessageType.Send,
+        //        MessageType = ActorMessage.EMessageType.Call,
         //        From = ActorId.Value,
         //        To = actorId,
         //        MessageId = messageId,
@@ -353,8 +400,46 @@ namespace XCEngine.Server
         //    };
 
         //    actorContext.ActorMessageQueue.PushMessage(msg);
-        //    return tcs.Task;
+
+        //    return await tcs.Task;
         //}
+
+        ///// <summary>
+        ///// 向Actor以Call形式发送消息，需要指定返回参数类型
+        ///// 返回的数据应该也是需要经过序列化的数据
+        ///// </summary>
+        ///// <typeparam name="RetType">返回的参数类型</typeparam>
+        ///// <param name="actorId">接收消息的actor</param>
+        ///// <param name="messageId">消息id</param>
+        ///// <param name="data">消息参数（Actor之间内存隔离，这里应该是序列化过的数据）</param>
+        ///// <returns>返回Task<RetType></returns>
+        //public static async Task<RetType> CallWithRaw<RetType>(int actorId, string messageId, object data)
+        //{
+        //    var actorContext = GetActorContext(actorId);
+        //    if (actorContext == null)
+        //    {
+        //        Log.Info($"Actor: {actorId} not exist.");
+        //        return default;
+        //    }
+
+        //    var tcs = new TaskCompletionSource<object>();
+        //    var msg = new ActorMessage()
+        //    {
+        //        MessageType = ActorMessage.EMessageType.Call,
+        //        From = ActorId.Value,
+        //        To = actorId,
+        //        MessageId = messageId,
+        //        MessageData = data,
+        //        MessageReplyTcs = tcs
+        //    };
+
+        //    actorContext.ActorMessageQueue.PushMessage(msg);
+
+        //    var ret = await tcs.Task;
+        //    return MessageSerializer.Deserialize<RetType>(ret as byte[]);
+        //}
+
+        //#endregion
 
         /// <summary>
         /// 向指定Actor发送原始Message

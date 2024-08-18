@@ -65,6 +65,6 @@
         ///// <summary>
         ///// 消息回复的tcs，用来处理call类型消息
         ///// </summary>
-        //public TaskCompletionSource MessageReplyTcs;
+        //public TaskCompletionSource<object> MessageReplyTcs;
     }
 }
