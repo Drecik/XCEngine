@@ -108,13 +108,10 @@
                 return GlobalActorMessageQueue.Pop();
             }
 
-            Actor.ActorId.Value = queue.ActorId;
-
             int n = 1;
-            ActorMessage message;
             for (int i = 0; i < n; ++i)
             {
-                message = queue.PopMessage();
+                ActorMessage message = queue.PopMessage();
                 if (message == null)
                 {
                     return GlobalActorMessageQueue.Pop();
@@ -126,8 +123,10 @@
                     n >>= workThreadContext.Weight;
                 }
 
-                // 执行Actor消息
-                actorContext.MessageHandler?.Invoke(actorContext.ActorObject, message);
+                // TODO：每次new感觉不太好，看看能不能优化
+                System.Threading.SynchronizationContext.SetSynchronizationContext(new SynchronizationContext(queue.ActorId, message.SessionId));
+
+                Actor.DispatchMessage(actorContext, message);
             }
 
             var nextQueue = GlobalActorMessageQueue.Pop();

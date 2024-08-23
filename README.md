@@ -26,6 +26,10 @@ Actor主要代码在Actor中，目前实现了基础的Actor功能。需要注�
 
   根据类型创建一个Actor，Actor类型是任意的clas类型。另外创建的Actor类型需要提供一个IActorMessageHandler用来处理Actor的消息，具体参考Example里面的Bootstrap代码。
 
+- Actor.Self
+
+  获取自身Actor Id
+
 - Actor.Kill
 
   杀死指定Actor
@@ -37,6 +41,12 @@ Actor主要代码在Actor中，目前实现了基础的Actor功能。需要注�
 - Actor.Send
 
   向指定Actor发送消息
+
+- Actor.Call
+  
+  向指定Actor发送Call消息，可以利用await等待Call的返回值，返回值底层逻辑上是可以支持多个，但是会增加模板复杂度，所以只能支持一个返回值。具体可以参考Example里面的Bootstrap代码。
+
+  另外Call和Start在用模板传参数的时候有同样的问题，我本意是想自动推导参数类型，这样就不用每次显示在模板里面指定，但是如果在Call中用了返回值模板，那剩余的模板类型就不会自动推导了，这使用起来就会比较恶心
 
 #### 3. Timer
 -  XC.Delay
@@ -60,6 +70,10 @@ XCEngine.Server的一些简单使用例子
 
     参考文档中的Timer
 
-3. 利用async await实现Actor.Call
-4. 实现socket封装
-5. 利用属性自动执行消息id回调
+3. ~~利用async await实现Actor.Call~~
+
+    参考文档中的Actor.Call
+
+4. 利用属性自动执行消息id回调
+5. 实现socket封装
+6. 支持热更新

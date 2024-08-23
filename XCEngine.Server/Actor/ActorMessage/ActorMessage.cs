@@ -48,11 +48,6 @@
         public int From;
 
         /// <summary>
-        /// 发送目标方
-        /// </summary>
-        public int To;
-
-        /// <summary>
         /// 消息Id
         /// </summary>
         public string MessageId;
@@ -62,9 +57,9 @@
         /// </summary>
         public object MessageData;
 
-        ///// <summary>
-        ///// 消息回复的tcs，用来处理call类型消息
-        ///// </summary>
-        //public TaskCompletionSource<object> MessageReplyTcs;
+        /// <summary>
+        /// 消息SessionId
+        /// </summary>
+        public int SessionId;
     }
 }

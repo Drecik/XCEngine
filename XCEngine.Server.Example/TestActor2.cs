@@ -5,7 +5,7 @@
 [ActorMessageHandler(typeof(TestActor2))]
 internal class TestActor2MessageHandler : IActorMessageHandler
 {
-    public void OnMessage(object actor, ActorMessage actorMessage)
+    public async void OnMessage(object actor, ActorMessage actorMessage)
     {
         if (actorMessage.MessageType == ActorMessage.EMessageType.Create)
         {
@@ -23,6 +23,18 @@ internal class TestActor2MessageHandler : IActorMessageHandler
             {
                 var (arg1, arg2, arg3) = Actor.MessageSerializer.Deserialize<int, string, double>(actorMessage.MessageData as byte[]);
                 Log.Info($"Receive send, {arg1}, {arg2}, {arg3}");
+            }
+        }
+
+        if (actorMessage.MessageType == ActorMessage.EMessageType.Call)
+        {
+            if (actorMessage.MessageId == "TestCall")
+            {
+                var (arg1, arg2, arg3) = Actor.MessageSerializer.Deserialize<int, string, double>(actorMessage.MessageData as byte[]);
+                Log.Info($"Receive call, {arg1}, {arg2}, {arg3}");
+
+                await Task.Delay(1000);
+                Actor.Return(Actor.MessageSerializer.Serialize(1));
             }
         }
     }

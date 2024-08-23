@@ -32,7 +32,7 @@ namespace XCEngine.Server
             var fileName = Path.GetFileName(stackFrame.GetFileName());
             sb.Append("[").Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")).Append("]")
                 .Append("[").Append(logLevel).Append("]")
-                .Append("[").Append(Actor.ActorId.Value).Append("]")
+                .Append("[").Append(Actor.Self()).Append("]")
                 .Append("[").Append(fileName).Append(":").Append(stackFrame.GetFileLineNumber()).Append("] ");
         }
     }

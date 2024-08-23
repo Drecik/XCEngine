@@ -105,7 +105,7 @@ namespace XCEngine.Server
 
         #region Timer
 
-        private static Core.Timer _timer = new Core.Timer();
+        private static Core.Timer _timer = new();
 
         internal static void UpdateTimer()
         {
@@ -125,13 +125,12 @@ namespace XCEngine.Server
         {
             lock (_timer)
             {
-                var actorId = Actor.ActorId.Value;
+                var actorId = Actor.Self();
                 _timer.AddTask(TimeUtils.NowMs() + delay, 0, () =>
                 {
                     Actor.PushMessage(actorId, new ActorMessage()
                     {
                         From = 0,
-                        To = actorId,
                         MessageType = ActorMessage.EMessageType.Timer,
                         MessageId = messageId,
                         MessageData = userData
@@ -151,13 +150,12 @@ namespace XCEngine.Server
         {
             lock (_timer)
             {
-                var actorId = Actor.ActorId.Value;
+                var actorId = Actor.Self();
                 _timer.AddTask(TimeUtils.NowMs() + firstDelay, interval, () =>
                 {
                     Actor.PushMessage(actorId, new ActorMessage()
                     {
                         From = 0,
-                        To = actorId,
                         MessageType = ActorMessage.EMessageType.Timer,
                         MessageId = messageId,
                         MessageData = userData

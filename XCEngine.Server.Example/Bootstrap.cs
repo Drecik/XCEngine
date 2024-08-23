@@ -7,7 +7,7 @@
 [ActorMessageHandler(typeof(Bootstrap))]
 internal class BootstrapMessageHandler : IActorMessageHandler
 {
-    public void OnMessage(object actor, ActorMessage actorMessage)
+    public async void OnMessage(object actor, ActorMessage actorMessage)
     {
         Bootstrap bootstrap = (Bootstrap)actor;
         if (actorMessage.MessageType == ActorMessage.EMessageType.Create)
@@ -20,7 +20,7 @@ internal class BootstrapMessageHandler : IActorMessageHandler
             XC.Delay(1000, "Delay1");
             XC.Tick(1000, 1000, "Tick");
         }
-        
+
         if (actorMessage.MessageType == ActorMessage.EMessageType.Destroy)
         {
             Log.Info("Destroy");
@@ -38,6 +38,12 @@ internal class BootstrapMessageHandler : IActorMessageHandler
             else if (actorMessage.MessageId == "Delay2")
             {
                 Log.Info("On delay2");
+                XC.Delay(1000, "Delay3", null);
+            }
+            else if (actorMessage.MessageId == "Delay3")
+            {
+                int ret = await Actor.Call<int, int, string, double>(bootstrap.Actor2Id, "TestCall", 1, "1", 2.0);
+                Log.Info($"Call return, {ret}");
                 Actor.Kill(bootstrap.Actor2Id);
             }
             else if (actorMessage.MessageId == "Tick")
