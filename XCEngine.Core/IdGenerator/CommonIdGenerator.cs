@@ -5,8 +5,8 @@
     /// </summary>
     public class CommonIdGenerator : IIdGenerator
     {
-        private static HashSet<int> _usedIds = new HashSet<int>();
-        private static int _idGenerator = 0;
+        private HashSet<int> _usedIds = new HashSet<int>();
+        private int _idGenerator = 0;
 
         public int GenerateId()
         {
@@ -23,6 +23,12 @@
             }
 
             _usedIds.Add(_idGenerator);
+
+            if (_usedIds.Count > 100000)
+            {
+                Log.Warning($"Id used overlay, now: {_usedIds.Count}");
+            }
+
             return _idGenerator;
         }
 

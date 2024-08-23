@@ -5,8 +5,8 @@
     /// </summary>
     public class ThreadSafeIdGenerator : IIdGenerator
     {
-        private static object _lock = new object();
-        private static IIdGenerator _idGenerator = new CommonIdGenerator();
+        private object _lock = new object();
+        private IIdGenerator _idGenerator = new CommonIdGenerator();
 
         public int GenerateId()
         {
