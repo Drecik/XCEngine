@@ -53,6 +53,49 @@ namespace XCEngine.Core
             return bufferWriter.WrittenSpan.ToArray();
         }
 
+        public byte[] Serialize(Type type, object obj)
+        {
+            return MemoryPack.MemoryPackSerializer.Serialize(type, obj);
+        }
+
+        public byte[] Serialize(Type type1, object obj1, Type type2, object obj2)
+        {
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bufferWriter, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bufferWriter, obj2);
+            return bufferWriter.WrittenSpan.ToArray();
+        }
+
+        public byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3)
+        {
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bufferWriter, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bufferWriter, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bufferWriter, obj3);
+            return bufferWriter.WrittenSpan.ToArray();
+        }
+
+        public byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4)
+        {
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bufferWriter, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bufferWriter, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bufferWriter, obj3);
+            MemoryPack.MemoryPackSerializer.Serialize(type4, bufferWriter, obj4);
+            return bufferWriter.WrittenSpan.ToArray();
+        }
+
+        public byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4, Type type5, object obj5)
+        {
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bufferWriter, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bufferWriter, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bufferWriter, obj3);
+            MemoryPack.MemoryPackSerializer.Serialize(type4, bufferWriter, obj4);
+            MemoryPack.MemoryPackSerializer.Serialize(type5, bufferWriter, obj5);
+            return bufferWriter.WrittenSpan.ToArray();
+        }
+
         public void Serialize<T>(IBufferWriter<byte> bw, T obj)
         {
             MemoryPack.MemoryPackSerializer.Serialize(bw, obj);
@@ -86,6 +129,41 @@ namespace XCEngine.Core
             MemoryPack.MemoryPackSerializer.Serialize(bw, obj3);
             MemoryPack.MemoryPackSerializer.Serialize(bw, obj4);
             MemoryPack.MemoryPackSerializer.Serialize(bw, obj5);
+        }
+
+        public void Serialize(IBufferWriter<byte> bw, Type type, object obj)
+        {
+            MemoryPack.MemoryPackSerializer.Serialize(type, bw, obj);
+        }
+
+        public void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2)
+        {
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bw, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bw, obj2);
+        }
+
+        public void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3)
+        {
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bw, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bw, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bw, obj3);
+        }
+
+        public void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4)
+        {
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bw, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bw, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bw, obj3);
+            MemoryPack.MemoryPackSerializer.Serialize(type4, bw, obj4);
+        }
+
+        public void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4, Type type5, object obj5)
+        {
+            MemoryPack.MemoryPackSerializer.Serialize(type1, bw, obj1);
+            MemoryPack.MemoryPackSerializer.Serialize(type2, bw, obj2);
+            MemoryPack.MemoryPackSerializer.Serialize(type3, bw, obj3);
+            MemoryPack.MemoryPackSerializer.Serialize(type4, bw, obj4);
+            MemoryPack.MemoryPackSerializer.Serialize(type5, bw, obj5);
         }
 
         #endregion

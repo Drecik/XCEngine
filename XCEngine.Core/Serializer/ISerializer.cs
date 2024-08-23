@@ -17,11 +17,24 @@ namespace XCEngine.Core
         byte[] Serialize<T1, T2, T3>(T1 obj1, T2 obj2, T3 obj3);
         byte[] Serialize<T1, T2, T3, T4>(T1 obj1, T2 obj2, T3 obj3, T4 obj4);
         byte[] Serialize<T1, T2, T3, T4, T5>(T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5);
+
+        byte[] Serialize(Type type, object obj);
+        byte[] Serialize(Type type1, object obj1, Type type2, object obj2);
+        byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3);
+        byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4);
+        byte[] Serialize(Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4, Type type5, object obj5);
+
         void Serialize<T>(IBufferWriter<byte> bw, T obj);
         void Serialize<T1, T2>(IBufferWriter<byte> bw, T1 obj1, T2 obj2);
         void Serialize<T1, T2, T3>(IBufferWriter<byte> bw, T1 obj1, T2 obj2, T3 obj3);
         void Serialize<T1, T2, T3, T4>(IBufferWriter<byte> bw, T1 obj1, T2 obj2, T3 obj3, T4 obj4);
         void Serialize<T1, T2, T3, T4, T5>(IBufferWriter<byte> bw, T1 obj1, T2 obj2, T3 obj3, T4 obj4, T5 obj5);
+
+        void Serialize(IBufferWriter<byte> bw, Type type, object obj);
+        void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2);
+        void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3);
+        void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4);
+        void Serialize(IBufferWriter<byte> bw, Type type1, object obj1, Type type2, object obj2, Type type3, object obj3, Type type4, object obj4, Type type5, object obj5);
 
         /// <summary>
         /// 反序列化对象
@@ -34,6 +47,7 @@ namespace XCEngine.Core
         (T1, T2, T3) Deserialize<T1, T2, T3>(byte[] data);
         (T1, T2, T3, T4) Deserialize<T1, T2, T3, T4>(byte[] data);
         (T1, T2, T3, T4, T5) Deserialize<T1, T2, T3, T4, T5>(byte[] data);
+
         T Deserialize<T>(ReadOnlySpan<byte> data);
         (T1, T2) Deserialize<T1, T2>(ReadOnlySpan<byte> data);
         (T1, T2, T3) Deserialize<T1, T2, T3>(ReadOnlySpan<byte> data);
@@ -50,6 +64,7 @@ namespace XCEngine.Core
         (object, object, object) Deserialize(Type type1, Type type2, Type type3, byte[] data);
         (object, object, object, object) Deserialize(Type type1, Type type2, Type type3, Type type4, byte[] data);
         (object, object, object, object, object) Deserialize(Type type1, Type type2, Type type3, Type type4, Type type5, byte[] data);
+
         object Deserialize(Type type, ReadOnlySpan<byte> data);
         (object, object) Deserialize(Type type1, Type type2, ReadOnlySpan<byte> data);
         (object, object, object) Deserialize(Type type1, Type type2, Type type3, ReadOnlySpan<byte> data);
