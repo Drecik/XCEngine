@@ -17,7 +17,7 @@ namespace XCEngine.Server
         /// <summary>
         /// Actor消息处理句柄
         /// </summary>
-        private static Dictionary<Type, Action<object, ActorMessage>> _actorMessageHandlerDict = new();
+        private static Dictionary<Type, Action<object, ActorMessage>> _actorMessageDispatcherDict = new();
 
         /// <summary>
         /// Message序列化对象
@@ -51,17 +51,17 @@ namespace XCEngine.Server
                 for (int i = 0; i < types.Length; ++i)
                 {
                     Type type = types[i];
-                    var attribute = type.GetCustomAttribute<ActorMessageHandlerAttribute>();
-                    if (attribute != null)
+                    var attribute = type.GetCustomAttribute<ActorMessageDispatcherAttribute>();
+                    if (attribute != null && type.IsAssignableTo(typeof(IActorMessageDispatcher)))
                     {
-                        var handler = Activator.CreateInstance(type) as IActorMessageHandler;
+                        var handler = Activator.CreateInstance(type) as IActorMessageDispatcher;
                         if (handler == null)
                         {
                             Log.Error($"Invalid actor message handler type: {type.Name}, need to implement IActorMessageHandler");
                             return false;
                         }
 
-                        _actorMessageHandlerDict[attribute.ActorType] = handler.OnMessage;
+                        _actorMessageDispatcherDict[attribute.ActorType] = handler.OnMessage;
                     }
                 }
             }
@@ -162,9 +162,9 @@ namespace XCEngine.Server
         /// <returns></returns>
         public static int StartRaw(Type type, object data)
         {
-            if (_actorMessageHandlerDict.TryGetValue(type, out var handler) == false)
+            if (_actorMessageDispatcherDict.TryGetValue(type, out var dispatcher) == false)
             {
-                Log.Warning($"{type.Name} has no actor message handler");
+                Log.Warning($"{type.Name} has no actor message dispatcher");
             }
 
             object actor = Activator.CreateInstance(type);
@@ -173,7 +173,7 @@ namespace XCEngine.Server
             {
                 ActorId = actorId,
                 ActorObject = actor,
-                MessageHandler = handler,
+                MessageDispatcher = dispatcher,
                 ActorMessageQueue = new ActorMessageQueue() { ActorId = actorId }
             };
 
@@ -606,7 +606,7 @@ namespace XCEngine.Server
                 }
 
                 // 其他消息执行自定义回调里面执行
-                actorContext.MessageHandler?.Invoke(actorContext.ActorObject, message);
+                actorContext.MessageDispatcher?.Invoke(actorContext.ActorObject, message);
             }
             catch (Exception e)
             {

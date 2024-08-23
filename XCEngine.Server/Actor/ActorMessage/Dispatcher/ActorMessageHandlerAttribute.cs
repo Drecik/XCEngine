@@ -1,7 +1,7 @@
 ﻿namespace XCEngine.Server
 {
     /// <summary>
-    /// ActorMessage处理句柄
+    /// ActorMessage消息处理句柄属性
     /// </summary>
     public class ActorMessageHandlerAttribute : Attribute
     {

@@ -23,6 +23,6 @@
         /// <summary>
         /// 消息派发回调
         /// </summary>
-        public Action<object, ActorMessage> MessageHandler { get; set; }
+        public Action<object, ActorMessage> MessageDispatcher { get; set; }
     }
 }

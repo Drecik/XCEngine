@@ -2,8 +2,8 @@
 {
 }
 
-[ActorMessageHandler(typeof(TestActor1))]
-internal class TestActor1MessageHandler : IActorMessageHandler
+[ActorMessageDispatcher(typeof(TestActor1))]
+internal class TestActor1MessageDispatcher : IActorMessageDispatcher
 {
     public void OnMessage(object actor, ActorMessage actorMessage)
     {

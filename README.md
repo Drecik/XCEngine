@@ -74,6 +74,9 @@ XCEngine.Server的一些简单使用例子
 
     参考文档中的Actor.Call
 
-4. 利用属性自动执行消息id回调
+4. ~~利用属性和反射自动派发消息id到对应函数~~
+
+    TestActor3利用该特性实行了TestActor2一样的功能
+
 5. 实现socket封装
 6. 支持热更新
