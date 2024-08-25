@@ -38,7 +38,12 @@
             /// <summary>
             /// 定时器消息
             /// </summary>
-            Timer
+            Timer,
+
+            /// <summary>
+            /// 原始数据，没有经过序列化
+            /// </summary>
+            Raw
         }
         public EMessageType MessageType;
 
