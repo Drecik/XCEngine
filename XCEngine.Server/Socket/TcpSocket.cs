@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace XCEngine.Server
 {
@@ -52,12 +50,22 @@ namespace XCEngine.Server
                         ISocketConnection connection = new TcpSocketConnection(_idGenerator.GenerateId(), socket as Socket);
                         _socketDict.Add(connection.Id, connection);
 
-                        Actor.Send(actorId, "OnAccept", connection.Id);
+                        Actor.PushMessage(actorId, new ActorMessage()
+                        {
+                            MessageType = ActorMessage.EMessageType.System,
+                            MessageId = "OnAccept",
+                            MessageData = new object[2] { fd, connection.Id }
+                        });
                     };
 
                     socketListener.OnErrorCallback = (error, errorDesc) =>
                     {
-                        Actor.Send(actorId, "OnError", fd, error, errorDesc);
+                        Actor.PushMessage(actorId, new ActorMessage()
+                        {
+                            MessageType = ActorMessage.EMessageType.System,
+                            MessageId = "OnError",
+                            MessageData = new object[3] { fd, error, errorDesc }
+                        });
                     };
 
                     socketListener.StartAccept();
@@ -80,18 +88,33 @@ namespace XCEngine.Server
 
                     socketConnection.OnReceiveCallback = (package) =>
                     {
-                        Actor.SendRaw(actorId, "OnReceive", new object[2] { fd, package });
+                        Actor.PushMessage(actorId, new ActorMessage()
+                        {
+                            MessageType = ActorMessage.EMessageType.System,
+                            MessageId = "OnReceive",
+                            MessageData = new object[2] { fd, package }
+                        });
                     };
 
                     socketConnection.OnErrorCallback = (error, errorDesc) =>
                     {
-                        Actor.Send(actorId, "OnError", fd, error, errorDesc);
+                        Actor.PushMessage(actorId, new ActorMessage()
+                        {
+                            MessageType = ActorMessage.EMessageType.System,
+                            MessageId = "OnError",
+                            MessageData = new object[3] { fd, error, errorDesc }
+                        });
                     };
 
                     socketConnection.OnCloseCallback = () =>
                     {
                         _socketDict.Remove(fd);
-                        Actor.Send(actorId, "OnClose", fd);
+                        Actor.PushMessage(actorId, new ActorMessage()
+                        {
+                            MessageType = ActorMessage.EMessageType.System,
+                            MessageId = "OnClose",
+                            MessageData = new object[1] { fd }
+                        });
                     };
                 }
             }

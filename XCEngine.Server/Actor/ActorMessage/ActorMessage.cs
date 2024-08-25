@@ -41,9 +41,9 @@
             Timer,
 
             /// <summary>
-            /// 原始数据，没有经过序列化
+            /// 系统数据，没有经过序列化
             /// </summary>
-            Raw
+            System
         }
         public EMessageType MessageType;
 
