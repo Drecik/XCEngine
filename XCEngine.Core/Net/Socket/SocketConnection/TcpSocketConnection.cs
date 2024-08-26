@@ -11,11 +11,6 @@ namespace XCEngine.Core
         private Socket _socket;
 
         /// <summary>
-        /// 用户同步的上下文
-        /// </summary>
-        private SynchronizationContext _syncContext;
-
-        /// <summary>
         /// 首包的长度
         /// </summary>
         const int ReceiveBufferSize = 10240;
@@ -48,10 +43,9 @@ namespace XCEngine.Core
         /// <summary>
         /// 开始收包
         /// </summary>
-        public override void BeginReceive(INetPackageSerializer netPackageSerializer, SynchronizationContext syncContext)
+        public override void BeginReceive(INetPackageSerializer netPackageSerializer)
         {
             _netPackageSerializer = netPackageSerializer;
-            _syncContext = syncContext;
             ReceivePackage();
         }
 
@@ -234,56 +228,20 @@ namespace XCEngine.Core
 
         void OnReceive(List<INetPackage> packageList)
         {
-            SendOrPostCallback action = (_) =>
+            for (int i = 0; i < packageList.Count; i++)
             {
-                for (int i = 0; i < packageList.Count; i++)
-                {
-                    OnReceiveCallback?.Invoke(packageList[i]);
-                }
-            };
-
-            if (_syncContext != null)
-            {
-                _syncContext?.Post(action, null);
-            }
-            else
-            {
-                action(null);
+                OnReceiveCallback?.Invoke(packageList[i]);
             }
         }
 
         void OnClose()
         {
-            SendOrPostCallback action = (_) =>
-            {
-                OnCloseCallback?.Invoke();
-            };
-
-            if (_syncContext != null)
-            {
-                _syncContext?.Post(action, null);
-            }
-            else
-            {
-                action(null);
-            }
+            OnCloseCallback?.Invoke();
         }
 
         void OnError(int errorId, string desc)
         {
-            SendOrPostCallback action = (_) =>
-            {
-                OnErrorCallback?.Invoke(errorId, desc);
-            };
-
-            if (_syncContext != null)
-            {
-                _syncContext?.Post(action, null);
-            }
-            else
-            {
-                action(null);
-            }
+            OnErrorCallback?.Invoke(errorId, desc);
         }
         #endregion
     }

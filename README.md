@@ -61,6 +61,10 @@ Actor主要代码在Actor中，目前实现了基础的Actor功能。需要注�
 
 XCEngine.Server的一些简单使用例子
 
+### XCEngine.Server.Example.TcpSocket
+
+TcpSocket使用例子
+
 ## Features
 1. ~~简化序列化操作~~
   
@@ -78,5 +82,10 @@ XCEngine.Server的一些简单使用例子
 
     TestActor3利用该特性实行了TestActor2一样的功能
 
-5. 实现socket封装
+5. ~~实现socket封装~~
+
+    参考Example.TcpSocket工程
+
 6. 支持热更新
+7. 优化
+   - 用了太多不必要的new操作，比如序列化，函数传参

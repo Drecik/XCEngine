@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "XCEngine.Server.Example.TcpSocket": {
+      "commandName": "Project",
+      "commandLineArgs": "./Config.json",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

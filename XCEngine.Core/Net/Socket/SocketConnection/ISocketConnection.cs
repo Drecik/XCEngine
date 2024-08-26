@@ -38,7 +38,7 @@ namespace XCEngine.Core
         /// 开始接收包
         /// <param name="syncContext">同步上下文</param>
         /// </summary>
-        void BeginReceive(INetPackageSerializer netPackageSerializer, SynchronizationContext syncContext = null);
+        void BeginReceive(INetPackageSerializer netPackageSerializer);
 
         /// <summary>
         /// 发送网络包

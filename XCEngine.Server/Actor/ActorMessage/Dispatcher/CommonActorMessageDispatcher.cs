@@ -42,7 +42,7 @@ namespace XCEngine.Server
                     var attribute = type.GetCustomAttribute<ActorMessageHandlerAttribute>();
                     if (attribute != null && attribute.ActorType == typeof(T))
                     {
-                        foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public))
+                        foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
                         {
                             var methodAttr = method.GetCustomAttribute<ActorMessageHandlerMethodAttribute>();
                             if (methodAttr != null)
@@ -78,10 +78,24 @@ namespace XCEngine.Server
 
             if (_messageMethodInfoDict.TryGetValue(actorMessage.MessageId, out var methodInfo))
             {
-                object ret = await InvokeWithArgs(actor, methodInfo, GetParameters(actor, methodInfo, actorMessage.MessageData));
-                if (actorMessage.MessageType == ActorMessage.EMessageType.Call)
+                if (actorMessage.MessageType == ActorMessage.EMessageType.System)
                 {
-                    Actor.Return(Actor.MessageSerializer.Serialize(ret.GetType(), ret));
+                    // 系统消息无需反序列化
+                    var systemArgs = actorMessage.MessageData as object[];
+                    var args = new object[1 + systemArgs.Length];
+                    for (int i = 0; i < systemArgs.Length; ++i)
+                    {
+                        args[i + 1] = systemArgs[i];
+                    }
+                    InvokeWithArgs(actor, methodInfo, args);
+                }
+                else
+                {
+                    object ret = await InvokeWithArgs(actor, methodInfo, GetParameters(actor, methodInfo, actorMessage.MessageData));
+                    if (actorMessage.MessageType == ActorMessage.EMessageType.Call)
+                    {
+                        Actor.Return(Actor.MessageSerializer.Serialize(ret.GetType(), ret));
+                    }
                 }
             }
             else

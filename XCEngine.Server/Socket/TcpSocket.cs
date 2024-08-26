@@ -13,6 +13,33 @@ namespace XCEngine.Server
         /// Id生成
         /// </summary>
         private static IIdGenerator _idGenerator = new ThreadSafeIdGenerator();
+        static void AddSocket(int fd, object socket)
+        {
+            lock (_socketDict)
+            {
+                _socketDict.Add(fd, socket);
+            }
+        }
+
+        static object GetSocket(int fd)
+        {
+            lock (_socketDict)
+            {
+                if (_socketDict.TryGetValue(fd, out object socket))
+                {
+                    return socket;
+                }
+                return null;
+            }
+        }
+
+        static void RemoveSocket(int fd)
+        {
+            lock (_socketDict)
+            {
+                _socketDict.Remove(fd);
+            }
+        }
 
         /// <summary>
         /// 监听端口
@@ -30,8 +57,37 @@ namespace XCEngine.Server
                 return 0;
             }
 
-            _socketDict.Add(listener.Id, listener);
+            AddSocket(listener.Id, listener);
             return listener.Id;
+        }
+
+        /// <summary>
+        /// 连接远端
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static Task<int> Connect(string ip, int port)
+        {
+            TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+            socket.BeginConnect(ip, port, (result) =>
+            {
+                try
+                {
+                    socket.EndConnect(result);
+                    ISocketConnection connection = new TcpSocketConnection(_idGenerator.GenerateId(), socket);
+                    tcs.SetResult(connection.Id);
+                    AddSocket(connection.Id, connection);
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(ex);
+                    tcs.SetResult(0);
+                }
+            }, null);
+            return tcs.Task;
         }
 
         /// <summary>
@@ -40,83 +96,91 @@ namespace XCEngine.Server
         /// <param name="fd"></param>
         public static void StartAccept(int fd)
         {
-            if (_socketDict.TryGetValue(fd, out var obj))
+            var socket = GetSocket(fd);
+            if (socket == null)
             {
-                if (obj is ISocketListener socketListener)
+                return;
+            }
+
+            if (socket is ISocketListener socketListener)
+            {
+                int actorId = Actor.Self();
+                socketListener.OnAcceptCallback = (socket) =>
                 {
-                    int actorId = Actor.Self();
-                    socketListener.OnAcceptCallback = (socket) =>
+                    ISocketConnection connection = new TcpSocketConnection(_idGenerator.GenerateId(), socket as Socket);
+                    AddSocket(connection.Id, connection);
+
+                    Actor.PushMessage(actorId, new ActorMessage()
                     {
-                        ISocketConnection connection = new TcpSocketConnection(_idGenerator.GenerateId(), socket as Socket);
-                        _socketDict.Add(connection.Id, connection);
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnAccept",
+                        MessageData = new object[2] { fd, connection.Id }
+                    });
+                };
 
-                        Actor.PushMessage(actorId, new ActorMessage()
-                        {
-                            MessageType = ActorMessage.EMessageType.System,
-                            MessageId = "OnAccept",
-                            MessageData = new object[2] { fd, connection.Id }
-                        });
-                    };
-
-                    socketListener.OnErrorCallback = (error, errorDesc) =>
+                socketListener.OnErrorCallback = (error, errorDesc) =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
                     {
-                        Actor.PushMessage(actorId, new ActorMessage()
-                        {
-                            MessageType = ActorMessage.EMessageType.System,
-                            MessageId = "OnError",
-                            MessageData = new object[3] { fd, error, errorDesc }
-                        });
-                    };
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnError",
+                        MessageData = new object[3] { fd, error, errorDesc }
+                    });
+                };
 
-                    socketListener.StartAccept();
-                }
+                socketListener.StartAccept();
             }
         }
 
         /// <summary>
-        /// 开始接受消息
+        /// 开始接收消息
         /// </summary>
         /// <param name="fd"></param>
         /// <param name="serializerFactory"></param>
-        public static void StartReceive(int fd, INetPackageSerializerFactory serializerFactory)
+        public static void StartReceive(int fd, INetPackageSerializer netPackageSerializer)
         {
-            if (_socketDict.TryGetValue(fd, out var obj))
+            var socket = GetSocket(fd);
+            if (socket == null)
             {
-                if (obj is ISocketConnection socketConnection)
+                return;
+            }
+
+            if (socket is ISocketConnection socketConnection)
+            {
+                int actorId = Actor.Self();
+
+                socketConnection.OnReceiveCallback = (package) =>
                 {
-                    int actorId = Actor.Self();
-
-                    socketConnection.OnReceiveCallback = (package) =>
+                    Actor.PushMessage(actorId, new ActorMessage()
                     {
-                        Actor.PushMessage(actorId, new ActorMessage()
-                        {
-                            MessageType = ActorMessage.EMessageType.System,
-                            MessageId = "OnReceive",
-                            MessageData = new object[2] { fd, package }
-                        });
-                    };
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnReceive",
+                        MessageData = new object[2] { fd, package }
+                    });
+                };
 
-                    socketConnection.OnErrorCallback = (error, errorDesc) =>
+                socketConnection.OnErrorCallback = (error, errorDesc) =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
                     {
-                        Actor.PushMessage(actorId, new ActorMessage()
-                        {
-                            MessageType = ActorMessage.EMessageType.System,
-                            MessageId = "OnError",
-                            MessageData = new object[3] { fd, error, errorDesc }
-                        });
-                    };
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnError",
+                        MessageData = new object[3] { fd, error, errorDesc }
+                    });
+                };
 
-                    socketConnection.OnCloseCallback = () =>
+                socketConnection.OnCloseCallback = () =>
+                {
+                    RemoveSocket(fd);
+                    Actor.PushMessage(actorId, new ActorMessage()
                     {
-                        _socketDict.Remove(fd);
-                        Actor.PushMessage(actorId, new ActorMessage()
-                        {
-                            MessageType = ActorMessage.EMessageType.System,
-                            MessageId = "OnClose",
-                            MessageData = new object[1] { fd }
-                        });
-                    };
-                }
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnClose",
+                        MessageData = new object[1] { fd }
+                    });
+                };
+
+                socketConnection.BeginReceive(netPackageSerializer);
             }
         }
 
@@ -126,12 +190,15 @@ namespace XCEngine.Server
         /// <param name="fd"></param>
         public static void Send(int fd, INetPackage pacakge)
         {
-            if (_socketDict.TryGetValue(fd, out var obj))
+            var socket = GetSocket(fd);
+            if (socket == null)
             {
-                if (obj is ISocketConnection socketConnection)
-                {
-                    socketConnection.Send(pacakge);
-                }
+                return;
+            }
+
+            if (socket is ISocketConnection socketConnection)
+            {
+                socketConnection.Send(pacakge);
             }
         }
 
@@ -141,18 +208,21 @@ namespace XCEngine.Server
         /// <param name="fd"></param>
         public static void Close(int fd)
         {
-            if (_socketDict.TryGetValue(fd, out var obj))
+            var socket = GetSocket(fd);
+            if (socket == null)
             {
-                if (obj is ISocketConnection socketConnection)
-                {
-                    socketConnection.Close();
-                    _socketDict.Remove(fd);
-                }
-                else if (obj is ISocketListener socketListener)
-                {
-                    socketListener.Close();
-                    _socketDict.Remove(fd);
-                }
+                return;
+            }
+
+            if (socket is ISocketConnection socketConnection)
+            {
+                socketConnection.Close();
+                RemoveSocket(fd);
+            }
+            else if (socket is ISocketListener socketListener)
+            {
+                socketListener.Close();
+                RemoveSocket(fd);
             }
         }
     }

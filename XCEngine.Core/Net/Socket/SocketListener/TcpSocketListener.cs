@@ -13,15 +13,9 @@ namespace XCEngine.Core
         /// </summary>
         private Socket _socket;
 
-        /// <summary>
-        /// 用户同步的上下文
-        /// </summary>
-        private SynchronizationContext _syncContext;
-
-        public TcpSocketListener(int id, SynchronizationContext syncContext = null)
+        public TcpSocketListener(int id)
             : base(id)
         {
-            _syncContext = syncContext;
         }
 
         public override bool Listen(string listenIp, int port, int backlog)
@@ -103,36 +97,12 @@ namespace XCEngine.Core
 
         void OnAccept(Socket socket)
         {
-            SendOrPostCallback action = (_) =>
-            {
-                OnAcceptCallback?.Invoke(socket);
-            };
-
-            if (_syncContext != null)
-            {
-                _syncContext.Post(action, null);
-            }
-            else
-            {
-                action(null);
-            }
+            OnAcceptCallback?.Invoke(socket);
         }
 
         void OnError(int errorId, string desc)
         {
-            SendOrPostCallback action = (_) =>
-            {
-                OnErrorCallback?.Invoke(errorId, desc);
-            };
-
-            if (_syncContext != null)
-            {
-                _syncContext.Post(action, null);
-            }
-            else
-            {
-                action(null);
-            }
+            OnErrorCallback?.Invoke(errorId, desc);
         }
         #endregion
     }

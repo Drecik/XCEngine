@@ -45,7 +45,7 @@ namespace XCEngine.Core
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="netPackageSerializer">包序列化对象</param>
+        /// <param name="id">Connection Id</param>
         public SocketConnection(int id)
         {
             Id = id;
@@ -55,7 +55,7 @@ namespace XCEngine.Core
         /// 开始接收包
         /// <param name="syncContext">同步上下文</param>
         /// </summary>
-        public abstract void BeginReceive(INetPackageSerializer netPackageSerializer, SynchronizationContext syncContext = null);
+        public abstract void BeginReceive(INetPackageSerializer netPackageSerializer);
 
         /// <summary>
         /// 发送网络包
