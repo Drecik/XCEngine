@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XCEngine.Core\XCEngine.Core.csproj" />
-    <ProjectReference Include="..\XCEngine.Server\XCEngine.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\XCEngine.Core\XCEngine.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\XCEngine.Server\XCEngine.Server.csproj" />
   </ItemGroup>
 
 </Project>
