@@ -79,7 +79,13 @@ namespace XCEngine.Server
         {
             foreach (var iter in configJson)
             {
-                if (iter.Value.AsValue().TryGetValue<bool>(out var b))
+                if (iter.Value.GetValueKind() == System.Text.Json.JsonValueKind.Array
+                    || iter.Value.GetValueKind() == System.Text.Json.JsonValueKind.Object)
+                {
+                    // 直接设置
+                    SetConfig(iter.Key, iter.Value);
+                }
+                else if (iter.Value.AsValue().TryGetValue<bool>(out var b))
                 {
                     SetConfig(iter.Key, b);
                 }
@@ -94,11 +100,6 @@ namespace XCEngine.Server
                 else if (iter.Value.AsValue().TryGetValue<string>(out var s))
                 {
                     SetConfig(iter.Key, s);
-                }
-                else
-                {
-                    // 直接设置JsonNode
-                    SetConfig(iter.Key, iter.Value);
                 }
             }
         }

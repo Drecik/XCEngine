@@ -1,9 +1,5 @@
-﻿internal class TestActor3
-{
-}
-
-[ActorMessageDispatcher(typeof(TestActor3))]
-internal class TestActor3MessageDispatcher : CommonActorMessageDispatcher<TestActor3>
+﻿[UseCommonActorMessageDispatcher]
+internal class TestActor3
 {
 }
 

@@ -45,28 +45,73 @@ namespace XCEngine.Server
         /// <returns></returns>
         internal static bool InitializeMessageHandlerDict()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().AsEnumerable();
+            if (ServerConfig.GetConfig("EnableHotfix", false) == true)
+            {
+                assemblies = Hotfix.ModelDllList;
+            }
+
+            foreach (var assembly in assemblies)
             {
                 Type[] types = assembly.GetTypes();
                 for (int i = 0; i < types.Length; ++i)
                 {
                     Type type = types[i];
-                    var attribute = type.GetCustomAttribute<ActorMessageDispatcherAttribute>();
-                    if (attribute != null && type.IsAssignableTo(typeof(IActorMessageDispatcher)))
                     {
-                        var handler = Activator.CreateInstance(type) as IActorMessageDispatcher;
-                        if (handler == null)
+                        var attribute = type.GetCustomAttribute<ActorMessageDispatcherAttribute>();
+                        if (attribute != null && type.IsAssignableTo(typeof(IActorMessageDispatcher)))
                         {
-                            Log.Error($"Invalid actor message handler type: {type.Name}, need to implement IActorMessageHandler");
-                            return false;
-                        }
+                            var handler = Activator.CreateInstance(type) as IActorMessageDispatcher;
+                            if (handler == null)
+                            {
+                                Log.Error($"Invalid actor message handler type: {type.Name}, need to implement IActorMessageHandler");
+                                return false;
+                            }
 
-                        _actorMessageDispatcherDict[attribute.ActorType] = handler.OnMessage;
+                            _actorMessageDispatcherDict[attribute.ActorType] = handler.OnMessage;
+                        }
+                    }
+                    {
+                        var attribute = type.GetCustomAttribute<UseCommonActorMessageDispatcherAttribute>();
+                        if (attribute != null)
+                        {
+                            _actorMessageDispatcherDict[type] = new CommonActorMessageDispatcher(type).OnMessage;
+                        }
                     }
                 }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 重新初始化，热更的时候调用
+        /// </summary>
+        /// <returns></returns>
+        internal static bool ReInitialize()
+        {
+            lock (_actorMessageDispatcherDict)
+            {
+                _actorMessageDispatcherDict.Clear();
+
+                bool ret = Initialize();
+                if (ret == false)
+                {
+                    return false;
+                }
+
+                foreach (var context in _actorContextDict.Values)
+                {
+                    if (_actorMessageDispatcherDict.TryGetValue(context.ActorObject.GetType(), out var dispatcher) == false)
+                    {
+                        Log.Warning($"{context.ActorObject.GetType()} has no actor message dispatcher");
+                    }
+
+                    context.MessageDispatcher = dispatcher;
+                }
+
+                return true;
+            }
         }
 
         #endregion
@@ -162,9 +207,13 @@ namespace XCEngine.Server
         /// <returns></returns>
         public static int StartRaw(Type type, object data)
         {
-            if (_actorMessageDispatcherDict.TryGetValue(type, out var dispatcher) == false)
+            Action<object, ActorMessage> dispatcher = null;
+            lock (_actorMessageDispatcherDict)
             {
-                Log.Warning($"{type.Name} has no actor message dispatcher");
+                if (_actorMessageDispatcherDict.TryGetValue(type, out dispatcher) == false)
+                {
+                    Log.Warning($"{type.Name} has no actor message dispatcher");
+                }
             }
 
             object actor = Activator.CreateInstance(type);

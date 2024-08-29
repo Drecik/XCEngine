@@ -1,13 +1,10 @@
-﻿internal class SocketServerActor
+﻿[UseCommonActorMessageDispatcher]
+internal class SocketServerActor
 {
     public int ListenFd = 0;
     public Dictionary<int, int> ConnectionDict = new();
 }
 
-[ActorMessageDispatcher(typeof(SocketServerActor))]
-internal class SocketServerActorMessageDispatcher : CommonActorMessageDispatcher<SocketServerActor>
-{
-}
 
 [ActorMessageHandler(typeof(SocketServerActor))]
 internal static class SocketServerActorMessageHandler

@@ -13,7 +13,7 @@ namespace XCEngine.Server
 
         public static void Start(string[] args)
         {
-            PosixSignalRegistration.Create(PosixSignal.SIGHUP, OnSignalStop);
+            PosixSignalRegistration.Create(PosixSignal.SIGQUIT, OnSignalQuit);
 
             Log.LogWithLevel = LogImplement.LogWithLevel;
 
@@ -24,17 +24,24 @@ namespace XCEngine.Server
                 Environment.Exit(1);
             }
 
-            if (false == Actor.Initialize())
-            {
-                Log.Error("Actor intialize failed");
-                Environment.Exit(1);
-            }
-
             // 启动定时器线程
             TimerThread.Start();
 
             // 启动工作线程
             WorkThread.Start(ServerConfig.WorkThreadCount);
+
+            // 热更初始化
+            if (ServerConfig.GetConfig("EnableHotfix", false))
+            {
+                Hotfix.Initialize();
+            }
+
+            // 初始化Actor
+            if (false == Actor.Initialize())
+            {
+                Log.Error("Actor intialize failed");
+                Environment.Exit(1);
+            }
 
             // 启动成功，创建启动Actor
             var bootstrapType = CommonUtils.GetType(ServerConfig.GetConfig("BootstrapType", string.Empty));
@@ -48,19 +55,11 @@ namespace XCEngine.Server
             LoopUntilStop();
         }
 
-        /// <summary>
-        /// 停止
-        /// </summary>
-        public static void Stop()
+        static void OnSignalQuit(PosixSignalContext context)
         {
-            _stop = true;
-        }
-
-        static void OnSignalStop(PosixSignalContext context)
-        {
-            Log.Info("OnSignalStop");
+            Log.Info("OnSignalQuit");
             context.Cancel = true;
-            Stop();
+            _stop = true;
         }
 
         static void LoopUntilStop()
@@ -70,15 +69,15 @@ namespace XCEngine.Server
                 Thread.Sleep(1000);
             }
 
-            BeginStop();
+            Stop();
         }
 
-        static void BeginStop()
+        static void Stop()
         {
             Log.Info("========= Begin stop ===========");
 
             Log.Info("========= Stop bootstrap actor =========");
-            Actor.Send(_bootstrapActorId, "BeginStop");
+            Actor.Send(_bootstrapActorId, "Stop");
 
             do
             {

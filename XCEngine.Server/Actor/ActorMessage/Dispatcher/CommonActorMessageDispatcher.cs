@@ -3,8 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace XCEngine.Server
 {
-    public class CommonActorMessageDispatcher<T> : IActorMessageDispatcher
+    public class CommonActorMessageDispatcher : IActorMessageDispatcher
     {
+        protected Type _actorType;
+
         /// <summary>
         /// Message方法信息
         /// </summary>
@@ -28,19 +30,27 @@ namespace XCEngine.Server
 
         private Dictionary<string, MessageMethodInfo> _messageMethodInfoDict = new();
 
-        public CommonActorMessageDispatcher()
+        public CommonActorMessageDispatcher(Type actorType)
         {
+            _actorType = actorType;
+
             // 查找所有该Actor的消息方法
 
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().AsEnumerable();
+            if (ServerConfig.GetConfig("EnableHotfix", false) == true)
+            {
+                assemblies = Hotfix.ModelHotfixDllList;
+            }
+
             // TODO：可以优化下，先全局遍历一遍，再按类型拿
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in assemblies)
             {
                 Type[] types = assembly.GetTypes();
                 for (int i = 0; i < types.Length; ++i)
                 {
                     Type type = types[i];
                     var attribute = type.GetCustomAttribute<ActorMessageHandlerAttribute>();
-                    if (attribute != null && attribute.ActorType == typeof(T))
+                    if (attribute != null && attribute.ActorType == _actorType)
                     {
                         foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
                         {
@@ -54,7 +64,7 @@ namespace XCEngine.Server
 
                                 if (methodInfo.IsAsync && method.ReturnType == typeof(void))
                                 {
-                                    throw new Exception($"Actor: {typeof(T).Name}, MessageId: {methodAttr.MessageId}, Method {method.Name}是异步方法，返回值不能是void");
+                                    throw new Exception($"Actor: {_actorType.Name}, MessageId: {methodAttr.MessageId}, Method {method.Name}是异步方法，返回值不能是void");
                                 }
 
                                 _messageMethodInfoDict.Add(methodInfo.MessageId, methodInfo);
@@ -102,7 +112,7 @@ namespace XCEngine.Server
             {
                 if (actorMessage.MessageType != ActorMessage.EMessageType.Create && actorMessage.MessageType != ActorMessage.EMessageType.Destroy)
                 {
-                    Log.Error($"Actor: {typeof(T).Name} receive invalid message id: {actorMessage.MessageId}");
+                    Log.Error($"Actor: {_actorType.Name} receive invalid message id: {actorMessage.MessageId}");
                 }
             }
         }
@@ -160,6 +170,14 @@ namespace XCEngine.Server
             {
                 throw new Exception("方法不支持5个以上参数");
             }
+        }
+    }
+
+    public class CommonActorMessageDispatcher<T> : CommonActorMessageDispatcher
+    {
+        public CommonActorMessageDispatcher()
+             : base(typeof(T))
+        {
         }
     }
 }

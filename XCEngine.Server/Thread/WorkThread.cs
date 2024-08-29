@@ -87,6 +87,14 @@
                         --_sleepCount;
                     }
                 }
+                else
+                {
+                    while (Hotfix.Reloading)
+                    {
+                        // 等待热更完成
+                        Thread.Sleep(100);
+                    }
+                }
             }
         }
 
@@ -111,6 +119,12 @@
             int n = 1;
             for (int i = 0; i < n; ++i)
             {
+                if (Hotfix.Reloading)
+                {
+                    // 热更中，打断循环
+                    break;
+                }
+
                 ActorMessage message = queue.PopMessage();
                 if (message == null)
                 {

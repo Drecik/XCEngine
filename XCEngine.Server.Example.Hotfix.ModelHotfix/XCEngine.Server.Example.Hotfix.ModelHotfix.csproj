@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\XCEngine.Core\XCEngine.Core.csproj" />
+    <ProjectReference Include="..\XCEngine.Server.Example.Hotfix.Model\XCEngine.Server.Example.Hotfix.Model.csproj" />
+    <ProjectReference Include="..\XCEngine.Server\XCEngine.Server.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y &quot;$(TargetDir)$(TargetName).dll&quot; &quot;$(SolutionDir)XCEngine.Server.Example.Hotfix\bin\Debug\net8.0&quot;&#xA;xcopy /Y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(SolutionDir)XCEngine.Server.Example.Hotfix\bin\Debug\net8.0&quot;" />
+  </Target>
+
+</Project>

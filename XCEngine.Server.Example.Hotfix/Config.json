@@ -1,0 +1,17 @@
+﻿{
+  "BootstrapType": "Bootstrap",
+
+  "EnableHotfix": true,
+  "ModelDllPathList": [
+    "bin\\Debug\\net8.0\\XCEngine.Server.Example.Hotfix.Model.dll"
+  ],
+  "ModelPdbPathList": [
+    "bin\\Debug\\net8.0\\XCEngine.Server.Example.Hotfix.Model.pdb"
+  ],
+  "ModelHotfixDllPathList": [
+    "bin\\Debug\\net8.0\\XCEngine.Server.Example.Hotfix.ModelHotfix.dll"
+  ],
+  "ModelHotfixPdbPathList": [
+    "bin\\Debug\\net8.0\\XCEngine.Server.Example.Hotfix.ModelHotfix.pdb"
+  ]
+}

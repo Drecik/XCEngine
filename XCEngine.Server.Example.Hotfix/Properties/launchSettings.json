@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "XCEngine.Server.Example.Hotfix": {
+      "commandName": "Project",
+      "commandLineArgs": "Config.json",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

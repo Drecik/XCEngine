@@ -1,0 +1,4 @@
+﻿[UseCommonActorMessageDispatcher]
+public class Bootstrap
+{
+}

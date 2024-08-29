@@ -1,11 +1,7 @@
-﻿internal class SocketClientActor
+﻿[UseCommonActorMessageDispatcher]
+internal class SocketClientActor
 {
     public int ConnectionFd;
-}
-
-[ActorMessageDispatcher(typeof(SocketClientActor))]
-internal class SocketClientActorMessageDispatcher : CommonActorMessageDispatcher<SocketClientActor>
-{
 }
 
 [ActorMessageHandler(typeof(SocketClientActor))]
