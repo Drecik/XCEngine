@@ -62,6 +62,24 @@ namespace XCEngine.Server
         }
 
         /// <summary>
+        /// 监听Http端口
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static int ListenHttp(string host, int port)
+        {
+            var listener = new HttpServer(_idGenerator.GenerateId());
+            if (false == listener.Listen(host, port))
+            {
+                return 0;
+            }
+
+            AddSocket(listener.Id, listener);
+            return listener.Id;
+        }
+
+        /// <summary>
         /// 连接远端
         /// </summary>
         /// <param name="ip"></param>
@@ -129,6 +147,31 @@ namespace XCEngine.Server
                 };
 
                 socketListener.StartAccept();
+            }
+            else if (socket is HttpServer httpServer)
+            {
+                int actorId = Actor.Self();
+                httpServer.OnAcceptCallback = (context) =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
+                    {
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnAccept",
+                        MessageData = new object[2] { fd, context }
+                    });
+                };
+
+                httpServer.OnErrorCallback = (error, errorDesc) =>
+                {
+                    Actor.PushMessage(actorId, new ActorMessage()
+                    {
+                        MessageType = ActorMessage.EMessageType.System,
+                        MessageId = "OnError",
+                        MessageData = new object[3] { fd, error, errorDesc }
+                    });
+                };
+
+                httpServer.StartAccept();
             }
         }
 
@@ -222,6 +265,11 @@ namespace XCEngine.Server
             else if (socket is ISocketListener socketListener)
             {
                 socketListener.Close();
+                RemoveSocket(fd);
+            }
+            else if (socket is HttpServer httpServer)
+            {
+                httpServer.Stop();
                 RemoveSocket(fd);
             }
         }

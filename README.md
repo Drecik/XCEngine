@@ -85,12 +85,17 @@ TcpSocket使用例子
 5. ~~实现socket封装~~
 
     参考Example.TcpSocket工程
-6. 支持HttpServer
+
+6. ~~支持HttpServer~~
+
+    参考Example.TcpSocket工程
+
 7. 错误处理
    - 通知Call来源方
 8. ~~支持热更新~~
 
     参考Example.Hotfix工程，Example.Hotfix是启动入口，Example.Hotfix.Model是Actor对象相关（这一块不能热更），Example.Hotfix.ModelHotfix是Actor消息处理（这一块可以热更）
+    
 9.  支持集群
 10. 优化
    - 用了太多不必要的new操作，比如序列化，函数传参

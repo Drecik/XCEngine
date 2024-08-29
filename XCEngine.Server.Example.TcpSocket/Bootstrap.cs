@@ -2,6 +2,9 @@
 {
     public int SocketServer;
     public int SocketClient;
+
+    public int HttpServer;
+    public int HttpClient;
 }
 
 [ActorMessageDispatcher(typeof(Bootstrap))]
@@ -17,6 +20,9 @@ internal class BootstrapMessageHandler : IActorMessageDispatcher
             bootstrap.SocketServer = Actor.Start(typeof(SocketServerActor), "127.0.0.1", 9999, 100);
 
             XC.Delay(1000, "Delay1");
+
+            bootstrap.HttpServer = Actor.Start(typeof(HttpServerActor), "localhost", 10086);
+            bootstrap.HttpClient = Actor.Start(typeof(HttpClientActor));
         }
 
         if (actorMessage.MessageType == ActorMessage.EMessageType.Destroy)

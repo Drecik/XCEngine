@@ -61,12 +61,6 @@ namespace XCEngine.Server
                                 methodInfo.MessageId = methodAttr.MessageId;
                                 methodInfo.IsAsync = method.GetCustomAttribute<AsyncStateMachineAttribute>() != null || method.ReturnType.IsSubclassOf(typeof(Task));
                                 methodInfo.Method = method;
-
-                                if (methodInfo.IsAsync && method.ReturnType == typeof(void))
-                                {
-                                    throw new Exception($"Actor: {_actorType.Name}, MessageId: {methodAttr.MessageId}, Method {method.Name}是异步方法，返回值不能是void");
-                                }
-
                                 _messageMethodInfoDict.Add(methodInfo.MessageId, methodInfo);
                             }
                         }
@@ -97,7 +91,8 @@ namespace XCEngine.Server
                     {
                         args[i + 1] = systemArgs[i];
                     }
-                    InvokeWithArgs(actor, methodInfo, args);
+                    args[0] = actor;
+                    methodInfo.Method.Invoke(null, args);
                 }
                 else
                 {
@@ -121,11 +116,11 @@ namespace XCEngine.Server
         {
             if (methodInfo.IsAsync)
             {
-                return await methodInfo.Method.InvokeAsync(actor, args);
+                return await methodInfo.Method.InvokeAsync(null, args);
             }
             else
             {
-                return methodInfo.Method.Invoke(actor, args);
+                return methodInfo.Method.Invoke(null, args);
             }
         }
 
