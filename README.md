@@ -95,8 +95,9 @@ TcpSocket使用例子
 8. ~~支持热更新~~
 
     参考Example.Hotfix工程，Example.Hotfix是启动入口，Example.Hotfix.Model是Actor对象相关（这一块不能热更），Example.Hotfix.ModelHotfix是Actor消息处理（这一块可以热更）
-    
+
 9.  支持集群
 10. 优化
    - 用了太多不必要的new操作，比如序列化，函数传参
-   - 代码生成模板
+   - ~~代码生成模板~~
+     Actor.zip ActorMessageHandler.zip 放入C:\Users\你的用户名\Documents\Visual Studio 2022\Templates\ItemTemplates下，之所以分开是为了热更。
